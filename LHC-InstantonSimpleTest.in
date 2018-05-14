@@ -1,0 +1,71 @@
+ # -*- ThePEG-repository -*-
+
+##################################################
+# Example generator based on LHC parameters
+# usage: Herwig read LHC.in
+##################################################
+
+read snippets/PPCollider.in
+
+##################################################
+# Technical parameters for this run
+##################################################
+
+cd /Herwig/EventHandlers 
+#set EventHandler:CascadeHandler        NULL 
+set EventHandler:HadronizationHandler  NULL 
+set EventHandler:DecayHandler          NULL 
+# The handler for multiple parton interactions 
+set /Herwig/Shower/ShowerHandler:MPIHandler       NULL
+
+
+cd /Herwig/Generators
+set EventGenerator:NumberOfEvents 10000000
+set EventGenerator:RandomNumberGenerator:Seed 31122001
+set EventGenerator:PrintEvent 1000
+set EventGenerator:DebugLevel 1
+set EventGenerator:MaxErrors 10000
+
+# set the Bin sampler to flat. 
+set /Herwig/Samplers/Sampler:BinSampler /Herwig/Samplers/FlatBinSampler
+
+########################
+## sqrt(s) = 14000 GeV ##
+########################
+set /Herwig/Generators/EventGenerator:EventHandler:LuminosityFunction:Energy 14000.0
+set EventGenerator:EventHandler:MaxLoop 10000000
+
+set EventGenerator:EventHandler:Sampler /Herwig/Samplers/Sampler
+
+cd /Herwig/Cuts
+set JetKtCut:MinKT 20.0*GeV
+#set /Herwig/Cuts/QCDCuts:MHatMin 200*GeV
+
+cd /Herwig/Analysis
+set Basics:CheckQuark false # removes warning that there are quarks in the final state in case hadronization is turned off
+
+##################################################
+# Matrix Elements for hadron-hadron collisions 
+# (by default only gamma/Z switched on)
+##################################################
+cd /Herwig/MatrixElements/
+
+#insert SimpleQCD:MatrixElements[0] MEqq2gZ2ff
+#set MEqq2gZ2ff:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
+
+create Herwig::MEInstantonSimpleTest MEInstantonSimpleTest Instantons.so
+insert SubProcess:MatrixElements[0] MEInstantonSimpleTest
+set MEInstantonSimpleTest:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
+
+set MEInstantonSimpleTest:NQuarkPair 5
+set MEInstantonSimpleTest:NAdditional 1
+
+set MEInstantonSimpleTest:ColourConnections Random
+
+
+cd /Herwig/Generators
+
+##################################################
+# Save run for later usage with 'Herwig run'
+##################################################
+saverun LHC-InstantonSimpleTest EventGenerator
