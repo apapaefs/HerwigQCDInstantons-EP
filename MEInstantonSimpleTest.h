@@ -168,9 +168,21 @@ private:
   size_t theNQuarkPair;
 
   /**
-   * the number of qqbar pairs
+   * the maximum number of additional gluons:
    */
   mutable size_t ngluon_max = 1;
+
+  /**
+   * whether to use a Gaussian parametrization for the ME2 of the number of gluons or not:
+   * i.e. multiply the ME2 by: exp( -pow((ngluon-GaussianParamA),2)/GaussianParamB)/sqrt(M_PI * GaussianParamB);
+   */
+  bool GaussianParametrisation;
+
+  /**
+   * the parameters A and B in the GaussianParametrisation of gluon multiplicity:
+   */
+  double GaussianParamA;
+  double GaussianParamB;
 
   /**
    * How to perform the colour connections 

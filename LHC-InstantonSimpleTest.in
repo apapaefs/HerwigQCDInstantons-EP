@@ -26,8 +26,15 @@ set EventGenerator:PrintEvent 1000
 set EventGenerator:DebugLevel 1
 set EventGenerator:MaxErrors 10000
 
-# set the Bin sampler to flat. 
+#############################
+# the default sampler (flat)
+#############################
+set /Herwig/Samplers/FlatBinSampler:NIterations 1
+set /Herwig/Samplers/FlatBinSampler:InitialPoints 10000
 set /Herwig/Samplers/Sampler:BinSampler /Herwig/Samplers/FlatBinSampler
+set /Herwig/Samplers/Sampler:Verbose Yes
+set /Herwig/Samplers/Sampler:AlmostUnweighted Yes
+set /Herwig/Samplers/Sampler:BinSampler:Kappa 0.01
 
 ########################
 ## sqrt(s) = 14000 GeV ##
@@ -44,24 +51,36 @@ set JetKtCut:MinKT 20.0*GeV
 cd /Herwig/Analysis
 set Basics:CheckQuark false # removes warning that there are quarks in the final state in case hadronization is turned off
 
+
 ##################################################
 # Matrix Elements for hadron-hadron collisions 
-# (by default only gamma/Z switched on)
 ##################################################
+
+# The MAMBO phase space
+cd /Herwig/MatrixElements/Matchbox/Phasespace
+create Herwig::MamboPhasespace MamboPS
+set MamboPS:CouplingData PhasespaceCouplings
+
 cd /Herwig/MatrixElements/
-
-#insert SimpleQCD:MatrixElements[0] MEqq2gZ2ff
-#set MEqq2gZ2ff:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
-
 create Herwig::MEInstantonSimpleTest MEInstantonSimpleTest Instantons.so
 insert SubProcess:MatrixElements[0] MEInstantonSimpleTest
-set MEInstantonSimpleTest:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
+#set MEInstantonSimpleTest:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
+set MEInstantonSimpleTest:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/MamboPS
 
+################
+#PARAMETERS
+################
+
+# the number of quark pairs to consider
 set MEInstantonSimpleTest:NQuarkPair 5
-set MEInstantonSimpleTest:NAdditional 1
 
-set MEInstantonSimpleTest:ColourConnections Random
+# the maximum number of additional gluons on top of the quark pairs
+set MEInstantonSimpleTest:NAdditional 10
 
+# the gaussian parametrization of multiplicities:
+set MEInstantonSimpleTest:GaussianParametrisation Yes
+set MEInstantonSimpleTest:GaussianParamA 5.
+set MEInstantonSimpleTest:GaussianParamB 200.
 
 cd /Herwig/Generators
 

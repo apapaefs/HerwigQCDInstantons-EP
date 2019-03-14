@@ -18,7 +18,7 @@
 
 using namespace Herwig;
 
-MEInstantonSimpleTest::MEInstantonSimpleTest() : theNQuarkPair(4), theColourConnections(0) {}
+MEInstantonSimpleTest::MEInstantonSimpleTest() : theNQuarkPair(4), theColourConnections(0), GaussianParametrisation(true), GaussianParamA(5), GaussianParamB(200.) {}
 
 MEInstantonSimpleTest::~MEInstantonSimpleTest() {}
 
@@ -32,8 +32,17 @@ IBPtr MEInstantonSimpleTest::fullclone() const {
 
 double MEInstantonSimpleTest::me2() const {
   //cout << "meMomenta().size() = " << meMomenta().size() << endl;
-  // the square of the matrix element 
-  return exp(7*(meMomenta().size()-2-2*nQuarkPair())*log(10));
+  // the square of the matrix element
+  int ngluon = (meMomenta().size()-2-nQuarkPair()*2);
+  //cout << "number of additional gluons = " << ngluon << endl;
+  double mesq = 1.;
+  if(GaussianParametrisation) {
+    mesq *= exp( -pow((ngluon-GaussianParamA),2)/GaussianParamB)/sqrt(M_PI * GaussianParamB);
+  }
+  //cout << "mesq = " << mesq << endl;
+  
+  
+  return mesq; 
 }
 
 void MEInstantonSimpleTest::doinit() {
@@ -89,7 +98,8 @@ list<BlobMEBase::ColourConnection> MEInstantonSimpleTest::colourConnections() co
   //count the number of gluons in the given event 
   int ngluon = (meMomenta().size()-2-nQuarkPair()*2);
 
-
+  cout << "number of additional gluons = " << ngluon << endl;
+  
   if(theColourConnections==0) {
     /*  a simple choice:qqbar pairs apart from the last one in the case of odd number of gluons.
         Then the last pair is connected to the first gluon. The rest of the gluons are 
@@ -317,13 +327,13 @@ size_t MEInstantonSimpleTest::nOutgoing() const {
 
 void MEInstantonSimpleTest::persistentOutput(PersistentOStream & os) const {
   // *** ATTENTION *** os << ; // Add all member variable which should be written persistently here.
-  os << theNQuarkPair << ngluon_max << theColourConnections;
+  os << theNQuarkPair << ngluon_max << GaussianParametrisation << GaussianParamA << GaussianParamB << theColourConnections;
 
 }
 
 void MEInstantonSimpleTest::persistentInput(PersistentIStream & is, int) {
   // *** ATTENTION *** is >> ; // Add all member variable which should be read persistently here.
-  is >> theNQuarkPair >> ngluon_max >> theColourConnections;
+  is >> theNQuarkPair >> ngluon_max >> GaussianParametrisation >> GaussianParamA >> GaussianParamB >> theColourConnections;
     
 }
 
@@ -364,8 +374,36 @@ void MEInstantonSimpleTest::Init() {
     static SwitchOption interfaceColourConnectionsRandom2
     (interfaceColourConnections,
      "Random2",
-     "Completely randomized colour connections. Singlet and octet gg.",
+     "Completely randomized colour connections. Singlet gg and gg with final state.",
      2);
+
+    static Switch<MEInstantonSimpleTest,bool> interfaceGaussianParametrisation
+    ("GaussianParametrisation",
+     "Freeze the Gaussian multiplicity parameters beyond scale set by FreezeGaussianParamsScale.",
+     &MEInstantonSimpleTest::GaussianParametrisation, false, false, false);
+  static SwitchOption GaussianParametrisationYes
+    (interfaceGaussianParametrisation,
+     "Yes",
+     "Gaussian parametrisation of gluon multiplicity ON.",
+     true);
+  static SwitchOption GaussianParametrisationNo
+    (interfaceGaussianParametrisation,
+     "No",
+     "Gaussian parametrisation of gluon multiplicity OFF",
+     false);
+
+    static Parameter<MEInstantonSimpleTest, double> interfaceGaussianParamA
+    ("GaussianParamA",
+     "GaussianParamA",
+     &MEInstantonSimpleTest::GaussianParamA,5. ,-1.E99, 1.E99,
+     false, false, Interface::limited);
+
+    static Parameter<MEInstantonSimpleTest, double> interfaceGaussianParamB
+    ("GaussianParamB",
+     "GaussianParamB",
+     &MEInstantonSimpleTest::GaussianParamB,200. ,-1.E99, 1.E99,
+     false, false, Interface::limited);
+
 
 }
 
