@@ -18,7 +18,7 @@
 
 using namespace Herwig;
 
-MEInstantonSimpleTest::MEInstantonSimpleTest() : theNQuarkPair(4), theColourConnections(0), GaussianParametrisation(true), GaussianParamA(5), GaussianParamB(200.) {}
+MEInstantonSimpleTest::MEInstantonSimpleTest() : theNQuarkPair(4), theColourConnections(0), MultiplicityParametrisation(0), GaussianParamA(5), GaussianParamB(200.), PoissonMean(3) {}
 
 MEInstantonSimpleTest::~MEInstantonSimpleTest() {}
 
@@ -31,16 +31,25 @@ IBPtr MEInstantonSimpleTest::fullclone() const {
 }
 
 double MEInstantonSimpleTest::me2() const {
-  //cout << "meMomenta().size() = " << meMomenta().size() << endl;
   // the square of the matrix element
+  double mesq = 1.;
+
   int ngluon = (meMomenta().size()-2-nQuarkPair()*2);
   //cout << "number of additional gluons = " << ngluon << endl;
-  double mesq = 1.;
-  if(GaussianParametrisation) {
-    mesq *= exp( -pow((ngluon-GaussianParamA),2)/GaussianParamB)/sqrt(M_PI * GaussianParamB);
-  }
-  //cout << "mesq = " << mesq << endl;
-  
+ 
+  /* 
+   * multiply by an appropriate factor 
+   * to take into account the multiplicity parametrisation
+   */
+  if(MultiplicityParametrisation==0) {
+    mesq *= pow(PoissonMean, ngluon) * exp(-PoissonMean)/factorial(ngluon);
+  } else if(MultiplicityParametrisation==1) {
+        mesq *= exp( -pow((ngluon-GaussianParamA),2)/GaussianParamB)/sqrt(M_PI * GaussianParamB);
+  } else if (MultiplicityParametrisation==3) {
+    /* 
+     * UserDefined multiplicity parametrisation goes here 
+     */
+  }  
   
   return mesq; 
 }
@@ -327,13 +336,13 @@ size_t MEInstantonSimpleTest::nOutgoing() const {
 
 void MEInstantonSimpleTest::persistentOutput(PersistentOStream & os) const {
   // *** ATTENTION *** os << ; // Add all member variable which should be written persistently here.
-  os << theNQuarkPair << ngluon_max << GaussianParametrisation << GaussianParamA << GaussianParamB << theColourConnections;
+  os << theNQuarkPair << ngluon_max << MultiplicityParametrisation << GaussianParamA << GaussianParamB << PoissonMean << theColourConnections;
 
 }
 
 void MEInstantonSimpleTest::persistentInput(PersistentIStream & is, int) {
   // *** ATTENTION *** is >> ; // Add all member variable which should be read persistently here.
-  is >> theNQuarkPair >> ngluon_max >> GaussianParametrisation >> GaussianParamA >> GaussianParamB >> theColourConnections;
+  is >> theNQuarkPair >> ngluon_max >> MultiplicityParametrisation >> GaussianParamA >> GaussianParamB >> PoissonMean >> theColourConnections;
     
 }
 
@@ -377,20 +386,33 @@ void MEInstantonSimpleTest::Init() {
      "Completely randomized colour connections. Singlet gg and gg with final state.",
      2);
 
-    static Switch<MEInstantonSimpleTest,bool> interfaceGaussianParametrisation
-    ("GaussianParametrisation",
-     "Freeze the Gaussian multiplicity parameters beyond scale set by FreezeGaussianParamsScale.",
-     &MEInstantonSimpleTest::GaussianParametrisation, false, false, false);
-  static SwitchOption GaussianParametrisationYes
-    (interfaceGaussianParametrisation,
-     "Yes",
-     "Gaussian parametrisation of gluon multiplicity ON.",
-     true);
-  static SwitchOption GaussianParametrisationNo
-    (interfaceGaussianParametrisation,
-     "No",
-     "Gaussian parametrisation of gluon multiplicity OFF",
-     false);
+ 
+    static Switch<MEInstantonSimpleTest,unsigned int> interfaceMultiplicityParametrisation
+    ("MultiplicityParametrisation",
+     "How to weigh the different gluon multiplicities",
+     &MEInstantonSimpleTest::MultiplicityParametrisation, 0, false, false);
+  static SwitchOption interfaceMultiplicityParametrisationPoisson
+    (interfaceMultiplicityParametrisation,
+     "Poisson",
+     "The multiplicity is parametrised as a Poisson distribution with mean PoissonMean.",
+     0);
+  static SwitchOption interfaceMultiplicityParametrisationGaussian
+    (interfaceMultiplicityParametrisation,
+     "Gaussian",
+     "The multiplicity is parametrised as a Gaussian distribution with parameters GaussianParamA (the mean) and GaussianParamB (the denominator in the exponent).",
+     1);
+  static SwitchOption interfaceMultiplicityParametrisationFlat
+    (interfaceMultiplicityParametrisation,
+     "Flat",
+     "The multiplicity is kept flat (no preference).",
+     2);
+    static SwitchOption interfaceMultiplicityParametrisationUserDefined
+    (interfaceMultiplicityParametrisation,
+     "UserDefined",
+     "The multiplicity is parametrised via a user-defined function. If no function is provided, then this is identical to flat.",
+     3);
+
+
 
     static Parameter<MEInstantonSimpleTest, double> interfaceGaussianParamA
     ("GaussianParamA",
@@ -403,7 +425,13 @@ void MEInstantonSimpleTest::Init() {
      "GaussianParamB",
      &MEInstantonSimpleTest::GaussianParamB,200. ,-1.E99, 1.E99,
      false, false, Interface::limited);
-
-
+    
+    static Parameter<MEInstantonSimpleTest, double> interfacePoissonMean
+      ("PoissonMean",
+     "PoissonMean",
+     &MEInstantonSimpleTest::PoissonMean,3. ,-1.E99, 1.E99,
+     false, false, Interface::limited);
+    
+    
 }
 

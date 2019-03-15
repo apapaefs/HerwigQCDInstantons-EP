@@ -78,7 +78,9 @@ set MEInstantonSimpleTest:NQuarkPair 5
 set MEInstantonSimpleTest:NAdditional 10
 
 # the gaussian parametrization of multiplicities:
-set MEInstantonSimpleTest:GaussianParametrisation Yes
+set MEInstantonSimpleTest:MultiplicityParametrisation Poisson
+set MEInstantonSimpleTest:PoissonMean 3.0
+
 set MEInstantonSimpleTest:GaussianParamA 5.
 set MEInstantonSimpleTest:GaussianParamB 200.
 

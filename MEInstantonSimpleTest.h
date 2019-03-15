@@ -173,16 +173,22 @@ private:
   mutable size_t ngluon_max = 1;
 
   /**
-   * whether to use a Gaussian parametrization for the ME2 of the number of gluons or not:
-   * i.e. multiply the ME2 by: exp( -pow((ngluon-GaussianParamA),2)/GaussianParamB)/sqrt(M_PI * GaussianParamB);
+   * whether to use a Gaussian or Poisson parametrizations for the ME2 of the number of gluons:
+   * i.e. Gaussian: multiply the ME2 by: exp( -pow((ngluon-GaussianParamA),2)/GaussianParamB)/sqrt(M_PI * GaussianParamB);
+   * Poisson: by PoissonMean^ngluon * exp(-PoissonMean)/ngluon!
    */
-  bool GaussianParametrisation;
+  unsigned int MultiplicityParametrisation;
 
   /**
    * the parameters A and B in the GaussianParametrisation of gluon multiplicity:
    */
   double GaussianParamA;
   double GaussianParamB;
+
+  /*
+   * The mean of the Poisson distribution used for the gluons if the MultiplicityParametrisation is "Poisson"
+   */
+  double PoissonMean;
 
   /**
    * How to perform the colour connections 
