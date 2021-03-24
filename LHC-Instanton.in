@@ -84,6 +84,8 @@ set MEInstanton:PoissonMean 3.0
 set MEInstanton:GaussianParamA 5.
 set MEInstanton:GaussianParamB 200.
 
+set MEInstanton:ColourConnections Random2
+
 cd /Herwig/Generators
 
 ##################################################
