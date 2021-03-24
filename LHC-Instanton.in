@@ -62,31 +62,31 @@ create Herwig::MamboPhasespace MamboPS
 set MamboPS:CouplingData PhasespaceCouplings
 
 cd /Herwig/MatrixElements/
-create Herwig::MEInstantonSimpleTest MEInstantonSimpleTest Instantons.so
-insert SubProcess:MatrixElements[0] MEInstantonSimpleTest
-#set MEInstantonSimpleTest:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
-set MEInstantonSimpleTest:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/MamboPS
+create Herwig::MEInstanton MEInstanton Instantons.so
+insert SubProcess:MatrixElements[0] MEInstanton
+#set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
+set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/MamboPS
 
 ################
 #PARAMETERS
 ################
 
 # the number of quark pairs to consider
-set MEInstantonSimpleTest:NQuarkPair 5
+set MEInstanton:NQuarkPair 5
 
 # the maximum number of additional gluons on top of the quark pairs
-set MEInstantonSimpleTest:NAdditional 10
+set MEInstanton:NAdditional 10
 
 # the gaussian parametrization of multiplicities:
-set MEInstantonSimpleTest:MultiplicityParametrisation Poisson
-set MEInstantonSimpleTest:PoissonMean 3.0
+set MEInstanton:MultiplicityParametrisation Poisson
+set MEInstanton:PoissonMean 3.0
 
-set MEInstantonSimpleTest:GaussianParamA 5.
-set MEInstantonSimpleTest:GaussianParamB 200.
+set MEInstanton:GaussianParamA 5.
+set MEInstanton:GaussianParamB 200.
 
 cd /Herwig/Generators
 
 ##################################################
 # Save run for later usage with 'Herwig run'
 ##################################################
-saverun LHC-InstantonSimpleTest EventGenerator
+saverun LHC-Instanton EventGenerator

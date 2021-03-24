@@ -1,10 +1,10 @@
 // -*- C++ -*-
 //
 // This is the implementation of the non-inlined, non-templated member
-// functions of the MEInstantonSimpleTest class.
+// functions of the MEInstanton class.
 //
 
-#include "MEInstantonSimpleTest.h"
+#include "MEInstanton.h"
 #include "ThePEG/Interface/ClassDocumentation.h"
 #include "ThePEG/EventRecord/Particle.h"
 #include "ThePEG/Repository/UseRandom.h"
@@ -18,19 +18,19 @@
 
 using namespace Herwig;
 
-MEInstantonSimpleTest::MEInstantonSimpleTest() : theNQuarkPair(4), theColourConnections(0), MultiplicityParametrisation(0), GaussianParamA(5), GaussianParamB(200.), PoissonMean(3) {}
+MEInstanton::MEInstanton() : theNQuarkPair(4), theColourConnections(0), MultiplicityParametrisation(0), GaussianParamA(5), GaussianParamB(200.), PoissonMean(3) {}
 
-MEInstantonSimpleTest::~MEInstantonSimpleTest() {}
+MEInstanton::~MEInstanton() {}
 
-IBPtr MEInstantonSimpleTest::clone() const {
+IBPtr MEInstanton::clone() const {
   return new_ptr(*this);
 }
 
-IBPtr MEInstantonSimpleTest::fullclone() const {
+IBPtr MEInstanton::fullclone() const {
   return new_ptr(*this);
 }
 
-double MEInstantonSimpleTest::me2() const {
+double MEInstanton::me2() const {
   // the square of the matrix element
   double mesq = 1.;
 
@@ -54,17 +54,17 @@ double MEInstantonSimpleTest::me2() const {
   return mesq; 
 }
 
-void MEInstantonSimpleTest::doinit() {
+void MEInstanton::doinit() {
   //the number of maximum gluons is given by the nAdditional() number of extra partons 
   ngluonmax(this->nAdditional());
 }
 
-void MEInstantonSimpleTest::doinitrun() {
+void MEInstanton::doinitrun() {
   //the number of maximum gluons is given by the nAdditional() number of extra partons 
   ngluonmax(this->nAdditional());
 }
 
-multimap<tcPDPair,tcPDVector> MEInstantonSimpleTest::processes() const {
+multimap<tcPDPair,tcPDVector> MEInstanton::processes() const {
   //the processmap to return 
   multimap<tcPDPair,tcPDVector> processmap;
   
@@ -101,13 +101,13 @@ multimap<tcPDPair,tcPDVector> MEInstantonSimpleTest::processes() const {
   return processmap;
 }
 
-list<BlobMEBase::ColourConnection> MEInstantonSimpleTest::colourConnections() const {
+list<BlobMEBase::ColourConnection> MEInstanton::colourConnections() const {
   list<BlobMEBase::ColourConnection> res;
   
   //count the number of gluons in the given event 
   int ngluon = (meMomenta().size()-2-nQuarkPair()*2);
 
-  cout << "number of additional gluons = " << ngluon << endl;
+  //cout << "number of additional gluons = " << ngluon << endl;
   
   if(theColourConnections==0) {
     /*  a simple choice:qqbar pairs apart from the last one in the case of odd number of gluons.
@@ -326,7 +326,7 @@ list<BlobMEBase::ColourConnection> MEInstantonSimpleTest::colourConnections() co
   return res;
 }
 
-size_t MEInstantonSimpleTest::nOutgoing() const {
+size_t MEInstanton::nOutgoing() const {
   return (2*nQuarkPair());
 }
 
@@ -334,13 +334,13 @@ size_t MEInstantonSimpleTest::nOutgoing() const {
 // in the InterfacedBase class here (using ThePEG-interfaced-impl in Emacs).
 
 
-void MEInstantonSimpleTest::persistentOutput(PersistentOStream & os) const {
+void MEInstanton::persistentOutput(PersistentOStream & os) const {
   // *** ATTENTION *** os << ; // Add all member variable which should be written persistently here.
   os << theNQuarkPair << ngluon_max << MultiplicityParametrisation << GaussianParamA << GaussianParamB << PoissonMean << theColourConnections;
 
 }
 
-void MEInstantonSimpleTest::persistentInput(PersistentIStream & is, int) {
+void MEInstanton::persistentInput(PersistentIStream & is, int) {
   // *** ATTENTION *** is >> ; // Add all member variable which should be read persistently here.
   is >> theNQuarkPair >> ngluon_max >> MultiplicityParametrisation >> GaussianParamA >> GaussianParamB >> PoissonMean >> theColourConnections;
     
@@ -352,24 +352,24 @@ void MEInstantonSimpleTest::persistentInput(PersistentIStream & is, int) {
 // are correct (the class and its base class), and that the constructor
 // arguments are correct (the class name and the name of the dynamically
 // loadable library where the class implementation can be found).
-DescribeClass<MEInstantonSimpleTest,Herwig::BlobME>
-  describeHerwigMEInstantonSimpleTest("Herwig::MEInstantonSimpleTest", "Instantons.so");
+DescribeClass<MEInstanton,Herwig::BlobME>
+  describeHerwigMEInstanton("Herwig::MEInstanton", "Instantons.so");
 
-void MEInstantonSimpleTest::Init() {
+void MEInstanton::Init() {
   
-  static ClassDocumentation<MEInstantonSimpleTest> documentation
-    ("There is no documentation for the MEInstantonSimpleTest class");
+  static ClassDocumentation<MEInstanton> documentation
+    ("There is no documentation for the MEInstanton class");
 
-  static Parameter<MEInstantonSimpleTest,size_t> interfaceNQuarkPair
+  static Parameter<MEInstanton,size_t> interfaceNQuarkPair
     ("NQuarkPair",
      "The number of quark pairs to consider.",
-     &MEInstantonSimpleTest::theNQuarkPair, 4, 1, 6,
+     &MEInstanton::theNQuarkPair, 4, 1, 6,
      false, false, Interface::limited);
 
-  static Switch<MEInstantonSimpleTest,unsigned int> interfaceColourConnections
+  static Switch<MEInstanton,unsigned int> interfaceColourConnections
     ("ColourConnections",
      "How to connect the colour lines",
-     &MEInstantonSimpleTest::theColourConnections, 0, false, false);
+     &MEInstanton::theColourConnections, 0, false, false);
   static SwitchOption interfaceColourConnectionsSimple
     (interfaceColourConnections,
      "Simple",
@@ -387,10 +387,10 @@ void MEInstantonSimpleTest::Init() {
      2);
 
  
-    static Switch<MEInstantonSimpleTest,unsigned int> interfaceMultiplicityParametrisation
+    static Switch<MEInstanton,unsigned int> interfaceMultiplicityParametrisation
     ("MultiplicityParametrisation",
      "How to weigh the different gluon multiplicities",
-     &MEInstantonSimpleTest::MultiplicityParametrisation, 0, false, false);
+     &MEInstanton::MultiplicityParametrisation, 0, false, false);
   static SwitchOption interfaceMultiplicityParametrisationPoisson
     (interfaceMultiplicityParametrisation,
      "Poisson",
@@ -414,22 +414,22 @@ void MEInstantonSimpleTest::Init() {
 
 
 
-    static Parameter<MEInstantonSimpleTest, double> interfaceGaussianParamA
+    static Parameter<MEInstanton, double> interfaceGaussianParamA
     ("GaussianParamA",
      "GaussianParamA",
-     &MEInstantonSimpleTest::GaussianParamA,5. ,-1.E99, 1.E99,
+     &MEInstanton::GaussianParamA,5. ,-1.E99, 1.E99,
      false, false, Interface::limited);
 
-    static Parameter<MEInstantonSimpleTest, double> interfaceGaussianParamB
+    static Parameter<MEInstanton, double> interfaceGaussianParamB
     ("GaussianParamB",
      "GaussianParamB",
-     &MEInstantonSimpleTest::GaussianParamB,200. ,-1.E99, 1.E99,
+     &MEInstanton::GaussianParamB,200. ,-1.E99, 1.E99,
      false, false, Interface::limited);
     
-    static Parameter<MEInstantonSimpleTest, double> interfacePoissonMean
+    static Parameter<MEInstanton, double> interfacePoissonMean
       ("PoissonMean",
      "PoissonMean",
-     &MEInstantonSimpleTest::PoissonMean,3. ,-1.E99, 1.E99,
+     &MEInstanton::PoissonMean,3. ,-1.E99, 1.E99,
      false, false, Interface::limited);
     
     

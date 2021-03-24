@@ -1,8 +1,8 @@
 // -*- C++ -*-
-#ifndef Herwig_MEInstantonSimpleTest_H
-#define Herwig_MEInstantonSimpleTest_H
+#ifndef Herwig_MEInstanton_H
+#define Herwig_MEInstanton_H
 //
-// This is the declaration of the MEInstantonSimpleTest class.
+// This is the declaration of the MEInstanton class.
 //
 
 #include "Herwig/MatrixElement/BlobME.h"
@@ -12,12 +12,12 @@ namespace Herwig {
 using namespace ThePEG;
 
 /**
- * Here is the documentation of the MEInstantonSimpleTest class.
+ * Here is the documentation of the MEInstanton class.
  *
- * @see \ref MEInstantonSimpleTestInterfaces "The interfaces"
- * defined for MEInstantonSimpleTest.
+ * @see \ref MEInstantonInterfaces "The interfaces"
+ * defined for MEInstanton.
  */
-class MEInstantonSimpleTest: public Herwig::BlobME {
+class MEInstanton: public Herwig::BlobME {
 
 public:
 
@@ -26,12 +26,12 @@ public:
   /**
    * The default constructor.
    */
-  MEInstantonSimpleTest();
+  MEInstanton();
 
   /**
    * The destructor.
    */
-  virtual ~MEInstantonSimpleTest();
+  virtual ~MEInstanton();
   //@}
 
   /**
@@ -160,7 +160,7 @@ private:
    * The assignment operator is private and must never be called.
    * In fact, it should not even be implemented.
    */
-  MEInstantonSimpleTest & operator=(const MEInstantonSimpleTest &);
+  MEInstanton & operator=(const MEInstanton &);
   
   /**
    * the number of qqbar pairs
@@ -201,4 +201,4 @@ private:
 
 }
 
-#endif /* Herwig_MEInstantonSimpleTest_H */
+#endif /* Herwig_MEInstanton_H */

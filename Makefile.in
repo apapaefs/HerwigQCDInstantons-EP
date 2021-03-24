@@ -30,7 +30,7 @@ default : Instantons.so
 %.o : %.cc %.h
 	$(CXX) -fPIC $(CPPFLAGS) $(INCLUDE) $(CXXFLAGS) -c -shared $< -o $@
 
-Instantons.so : MEInstantonSimpleTest.o
+Instantons.so : MEInstanton.o
 	$(CXX) -fPIC $(CPPFLAGS) $(INCLUDE) $(CXXFLAGS) $(SHARED_FLAG) $(LDFLAGS) \
 	$(FCLIBS) $^ -o $@
 
