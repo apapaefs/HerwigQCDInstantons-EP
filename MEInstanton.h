@@ -6,6 +6,7 @@
 //
 
 #include "Herwig/MatrixElement/BlobME.h"
+#include "Herwig/Utilities/Interpolator.h"
 
 namespace Herwig {
 
@@ -179,6 +180,14 @@ private:
    */
   unsigned int MultiplicityParametrisation;
 
+  /** 
+   * How to model the Matrix Element 
+   * 0 = flat with MultiplicityParametrisation giving the kind of distribution for the final state gluons or
+   * 1 = according to 1911.09726
+   */
+  
+  unsigned int MEModeling;
+
   /**
    * the parameters A and B in the GaussianParametrisation of gluon multiplicity:
    */
@@ -196,6 +205,18 @@ private:
   
   unsigned int theColourConnections;
 
+  /**
+   * Setup the interpolators
+   */
+  void setup_interpolator();
+
+    /**
+   * the Interpolators
+   */ 
+  Interpolator<double, double>::Ptr interpol_invrho;
+  Interpolator<double, double>::Ptr interpol_alphasrho;
+  Interpolator<double, double>::Ptr interpol_meangluons;
+  Interpolator<double, double>::Ptr interpol_sigmahat;
 
 };
 

@@ -29,24 +29,27 @@ set EventGenerator:MaxErrors 10000
 #############################
 # the default sampler (flat)
 #############################
-set /Herwig/Samplers/FlatBinSampler:NIterations 1
-set /Herwig/Samplers/FlatBinSampler:InitialPoints 10000
+set /Herwig/Samplers/FlatBinSampler:NIterations 2
+set /Herwig/Samplers/FlatBinSampler:InitialPoints 100000
 set /Herwig/Samplers/Sampler:BinSampler /Herwig/Samplers/FlatBinSampler
 set /Herwig/Samplers/Sampler:Verbose Yes
 set /Herwig/Samplers/Sampler:AlmostUnweighted Yes
 set /Herwig/Samplers/Sampler:BinSampler:Kappa 0.01
 
+#set /Herwig/Samplers/Sampler:BinSampler /Herwig/Samplers/MonacoSampler
+#set /Herwig/Samplers/Sampler:BinSampler /Herwig/Samplers/CellGridSampler
+
 ########################
-## sqrt(s) = 14000 GeV ##
+## sqrt(s) = 13000 GeV ##
 ########################
-set /Herwig/Generators/EventGenerator:EventHandler:LuminosityFunction:Energy 14000.0
+set /Herwig/Generators/EventGenerator:EventHandler:LuminosityFunction:Energy 13000.0
 set EventGenerator:EventHandler:MaxLoop 10000000
 
 set EventGenerator:EventHandler:Sampler /Herwig/Samplers/Sampler
 
 cd /Herwig/Cuts
-set JetKtCut:MinKT 20.0*GeV
-#set /Herwig/Cuts/QCDCuts:MHatMin 200*GeV
+set JetKtCut:MinKT 0.0*GeV
+#set JetKtCut:MaxKT 50.0*GeV
 
 cd /Herwig/Analysis
 set Basics:CheckQuark false # removes warning that there are quarks in the final state in case hadronization is turned off
@@ -64,26 +67,34 @@ set MamboPS:CouplingData PhasespaceCouplings
 cd /Herwig/MatrixElements/
 create Herwig::MEInstanton MEInstanton Instantons.so
 insert SubProcess:MatrixElements[0] MEInstanton
-#set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
-set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/MamboPS
+set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
+#set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/MamboPS
 
 ################
 #PARAMETERS
 ################
 
 # the number of quark pairs to consider
-set MEInstanton:NQuarkPair 5
+set MEInstanton:NQuarkPair 3
 
 # the maximum number of additional gluons on top of the quark pairs
-set MEInstanton:NAdditional 10
+set MEInstanton:NAdditional 1
 
-# the gaussian parametrization of multiplicities:
+
+# MEModeling = Flat (default) parameters:
+# the parametrization of multiplicities:
 set MEInstanton:MultiplicityParametrisation Poisson
 set MEInstanton:PoissonMean 3.0
-
+# the choice of the parameters if the MultiplicityParametrisation is "Gaussian"
 set MEInstanton:GaussianParamA 5.
 set MEInstanton:GaussianParamB 200.
 
+# MEModeling = KKS (Khoze, Krauss, Schott, 1911.09726)
+set MEInstanton:MEModeling KKS
+set /Herwig/Cuts/Cuts:MHatMin 10.7*GeV
+set /Herwig/Cuts/Cuts:MHatMax 2895.5*GeV
+
+# Choose the colour connections
 set MEInstanton:ColourConnections Random2
 
 cd /Herwig/Generators

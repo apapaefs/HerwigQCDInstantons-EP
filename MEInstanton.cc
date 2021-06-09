@@ -12,13 +12,13 @@
 #include "ThePEG/Utilities/DescribeClass.h"
 #include "ThePEG/Interface/Parameter.h"
 #include "ThePEG/Interface/Switch.h"
-
+#include "Herwig/Utilities/Interpolator.h"
 #include "ThePEG/Persistency/PersistentOStream.h"
 #include "ThePEG/Persistency/PersistentIStream.h"
 
 using namespace Herwig;
 
-MEInstanton::MEInstanton() : theNQuarkPair(4), theColourConnections(0), MultiplicityParametrisation(0), GaussianParamA(5), GaussianParamB(200.), PoissonMean(3) {}
+MEInstanton::MEInstanton() : theNQuarkPair(4), theColourConnections(0), MultiplicityParametrisation(0), MEModeling(0), GaussianParamA(5), GaussianParamB(200.), PoissonMean(3) {}
 
 MEInstanton::~MEInstanton() {}
 
@@ -30,26 +30,74 @@ IBPtr MEInstanton::fullclone() const {
   return new_ptr(*this);
 }
 
+void MEInstanton::setup_interpolator()  {
+  static const array<double,20> hats = {{ 10.7, 11.4, 13.4, 15.7, 22.9, 29.7, 40.8, 56.1, 61.8, 89.6, 118.0, 174.4, 246.9, 349.9, 496.3, 704.8, 1001.8, 1425.6, 2030.6, 2895.5 }}; // the square root of s-hat
+  static const array<double,20> invrho = {{ 0.99, 1.04, 1.16, 1.31, 1.76, 2.12, 2.72, 3.50, 3.64, 4.98, 6.21, 8.72, 11.76, 15.90, 21.58, 29.37, 40.07, 54.83, 75.21, 103.4 }}; // the 1/rho
+  static const array<double,20> alphasrho = {{ 0.416, 0.405, 0.382, 0.360, 0.315, 0.293, 0.267, 0.245, 0.223, 0.206, 0.195, 0.180, 0.169, 0.159, 0.150, 0.142, 0.135, 0.128, 0.122, 0.117}}; //the alphaS(1/rho)
+  static const array<double,20> meangluons = {{ 4.59, 4.68, 4.90, 5.13, 5.44, 6.02, 6.47, 6.92, 7.28, 7.67, 8.25, 8.60, 9.04, 9.49, 9.93, 10.37, 10.81, 11.26, 11.70, 12.14}}; //the mean number of gluons
+  static const array<double,20> sigmahat = {{4.992E9, 3.652E9, 1.671E9, 728.9E6, 85.94E6, 17.25E6, 2.121E6, 229.0E3, 72.97E3, 2.733E3, 235.4, 6.720, 0.284, 0.012, 5.112E-4, 21.65E-6, 0.9017E-6, 36.45E-9, 1.419E-9, 52.07E-12}};
+  //create the interpolators:
+  interpol_invrho = make_InterpolatorPtr(invrho, hats, 1);
+  interpol_alphasrho = make_InterpolatorPtr(alphasrho, hats, 1);
+  interpol_meangluons = make_InterpolatorPtr(meangluons, hats, 1);
+  interpol_sigmahat = make_InterpolatorPtr(sigmahat, hats, 1);
+
+  /* test inteprolators */
+  bool test_interpolators = true;
+  if(test_interpolators == true) {
+    double sqrt_hats = 10.7;
+    cout << "sqrt_hats, invrho, alphasrho, meangluons, sigmahat=" << sqrt_hats << "\t" << (*interpol_invrho)(sqrt_hats) << "\t" << (*interpol_alphasrho)(sqrt_hats) << "\t" << (*interpol_meangluons)(sqrt_hats) << "\t" << (*interpol_sigmahat)(sqrt_hats) << endl;
+    sqrt_hats = 29.7;
+    cout << "sqrt_hats, invrho, alphasrho, meangluons, sigmahat=" << sqrt_hats << "\t" << (*interpol_invrho)(sqrt_hats) << "\t" << (*interpol_alphasrho)(sqrt_hats) << "\t" << (*interpol_meangluons)(sqrt_hats) << "\t" << (*interpol_sigmahat)(sqrt_hats) << endl;
+    sqrt_hats = 704.8;
+    cout << "sqrt_hats, invrho, alphasrho, meangluons, sigmahat=" << sqrt_hats << "\t" << (*interpol_invrho)(sqrt_hats) << "\t" << (*interpol_alphasrho)(sqrt_hats) << "\t" << (*interpol_meangluons)(sqrt_hats) << "\t" << (*interpol_sigmahat)(sqrt_hats) << endl;
+    sqrt_hats = 900.;
+    cout << "sqrt_hats, invrho, alphasrho, meangluons, sigmahat=" << sqrt_hats << "\t" << (*interpol_invrho)(sqrt_hats) << "\t" << (*interpol_alphasrho)(sqrt_hats) << "\t" << (*interpol_meangluons)(sqrt_hats) << "\t" << (*interpol_sigmahat)(sqrt_hats) << endl;
+  }
+}
+
 double MEInstanton::me2() const {
   // the square of the matrix element
   double mesq = 1.;
 
   int ngluon = (meMomenta().size()-2-nQuarkPair()*2);
   //cout << "number of additional gluons = " << ngluon << endl;
- 
+  int noutgoing = ngluon + nQuarkPair()*2;
+
+  double interpolated_meangluons;
+  double interpolated_sigmahat;
+  double sqrt_hats;  
   /* 
    * multiply by an appropriate factor 
    * to take into account the multiplicity parametrisation
    */
-  if(MultiplicityParametrisation==0) {
-    mesq *= pow(PoissonMean, ngluon) * exp(-PoissonMean)/factorial(ngluon);
-  } else if(MultiplicityParametrisation==1) {
-        mesq *= exp( -pow((ngluon-GaussianParamA),2)/GaussianParamB)/sqrt(M_PI * GaussianParamB);
-  } else if (MultiplicityParametrisation==3) {
-    /* 
+  if(MEModeling == 0) { 
+    if(MultiplicityParametrisation==0) {
+      mesq *= pow(PoissonMean, ngluon) * exp(-PoissonMean)/factorial(ngluon);
+    } else if(MultiplicityParametrisation==1) {
+      mesq *= exp( -pow((ngluon-GaussianParamA),2)/GaussianParamB)/sqrt(M_PI * GaussianParamB);
+    } else if (MultiplicityParametrisation==3) {
+      /* 
      * UserDefined multiplicity parametrisation goes here 
      */
-  }  
+    }
+  }
+  else if(MEModeling == 1) {
+    sqrt_hats = sqrt(sHat()/GeV/GeV);
+    if(sqrt_hats > 2895.5) { return 0.; } // return 0. if the ME is larger than 2895.5 GeV, the maximum value in the interpolator
+    // get the mean number of gluons from the interpolation
+    interpolated_meangluons = (*interpol_meangluons)(sqrt_hats);
+    // multiply the ME with the appropriate Poisson factor
+    mesq *= pow(interpolated_meangluons, ngluon) * exp(-interpolated_meangluons)/factorial(ngluon);
+    // get the sigma_hat from the interpolation:
+    interpolated_sigmahat = (*interpol_sigmahat)(sqrt_hats);
+    mesq *= interpolated_sigmahat;
+    //divide by phase space volume:
+    mesq /= pow(Constants::pi/2, noutgoing-1) * pow(sHat()/GeV/GeV, noutgoing-2) / factorial(noutgoing-1) / factorial(noutgoing-2);
+    //cout << "sqrt_hats, interpolated_meangluons, interpolated_sigmahat, mesq, noutgoing = " << sqrt_hats << "\t" << interpolated_meangluons << "\t" << interpolated_sigmahat << "\t" << mesq << "\t" << noutgoing << endl;
+  }
+  
+  
   
   return mesq; 
 }
@@ -57,11 +105,13 @@ double MEInstanton::me2() const {
 void MEInstanton::doinit() {
   //the number of maximum gluons is given by the nAdditional() number of extra partons 
   ngluonmax(this->nAdditional());
+  setup_interpolator();
 }
 
 void MEInstanton::doinitrun() {
   //the number of maximum gluons is given by the nAdditional() number of extra partons 
   ngluonmax(this->nAdditional());
+  cout << "MEModeling is set to " << MEModeling << endl;
 }
 
 multimap<tcPDPair,tcPDVector> MEInstanton::processes() const {
@@ -336,15 +386,14 @@ size_t MEInstanton::nOutgoing() const {
 
 void MEInstanton::persistentOutput(PersistentOStream & os) const {
   // *** ATTENTION *** os << ; // Add all member variable which should be written persistently here.
-  os << theNQuarkPair << ngluon_max << MultiplicityParametrisation << GaussianParamA << GaussianParamB << PoissonMean << theColourConnections;
-
+  os << theNQuarkPair << ngluon_max << MultiplicityParametrisation << MEModeling << GaussianParamA << GaussianParamB << PoissonMean << theColourConnections << interpol_invrho << interpol_alphasrho << interpol_meangluons << interpol_sigmahat;
 }
 
 void MEInstanton::persistentInput(PersistentIStream & is, int) {
   // *** ATTENTION *** is >> ; // Add all member variable which should be read persistently here.
-  is >> theNQuarkPair >> ngluon_max >> MultiplicityParametrisation >> GaussianParamA >> GaussianParamB >> PoissonMean >> theColourConnections;
-    
+  is >> theNQuarkPair >> ngluon_max >> MultiplicityParametrisation >> MEModeling >> GaussianParamA >> GaussianParamB >> PoissonMean >> theColourConnections >> interpol_invrho >> interpol_alphasrho >> interpol_meangluons >> interpol_sigmahat;
 }
+    
 
 
 // *** Attention *** The following static variable is needed for the type
@@ -412,7 +461,20 @@ void MEInstanton::Init() {
      "The multiplicity is parametrised via a user-defined function. If no function is provided, then this is identical to flat.",
      3);
 
-
+    static Switch<MEInstanton,unsigned int> interfaceMEModeling
+    ("MEModeling",
+     "How to model the matrix element",
+     &MEInstanton::MEModeling, 0, false, false);
+  static SwitchOption interfaceMEModelingPureMultiplicity
+    (interfaceMEModeling,
+     "PureMultiplicity",
+     "Flat ME with MultiplicityParametrisation giving the kind of distribution for the final state gluons.",
+     0);
+  static SwitchOption interfaceMEModelingKKS
+    (interfaceMEModeling,
+     "KKS",
+     "Matrix element according to Khoze, Krauss, Schott (1911.09726).",
+     1);
 
     static Parameter<MEInstanton, double> interfaceGaussianParamA
     ("GaussianParamA",
