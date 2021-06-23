@@ -278,7 +278,7 @@ list<BlobMEBase::ColourConnection> MEInstanton::colourConnections() const {
   list<BlobMEBase::ColourConnection> res;
   
   //count the number of gluons in the given event 
-  int ngluon = (meMomenta().size()-2-nQuarkPair()*2);
+  int ngluon = (meMomenta().size()-2-GetnQuarkPair()*2);
 
   //cout << "number of additional gluons = " << ngluon << endl;
   
@@ -299,7 +299,7 @@ list<BlobMEBase::ColourConnection> MEInstanton::colourConnections() const {
     //make the colour connections for some of the quark lines
     vector<BlobMEBase::ColourConnection> quark_lines;
     quark_lines.resize(4);
-    for(unsigned int cc = 0; cc < nQuarkPair()-1; cc++) {
+    for(unsigned int cc = 0; cc < GetnQuarkPair()-1; cc++) {
       quark_lines[cc].addColour(2*cc+2);
       quark_lines[cc].addAntiColour(2*cc+3);
       res.push_back(quark_lines[cc]);
@@ -308,17 +308,17 @@ list<BlobMEBase::ColourConnection> MEInstanton::colourConnections() const {
     //and connect the gluons in pairs
     if(ngluon%2 == 0) {
       BlobMEBase::ColourConnection quark_lastpair;
-      quark_lastpair.addColour(2*(nQuarkPair()-1)+2);
-      quark_lastpair.addAntiColour(2*(nQuarkPair()-1)+3);
+      quark_lastpair.addColour(2*(GetnQuarkPair()-1)+2);
+      quark_lastpair.addAntiColour(2*(GetnQuarkPair()-1)+3);
       res.push_back(quark_lastpair);
       //loop over gluons and pair adjacent ones 
       for(unsigned int gg = 1; gg <= ngluon/2; gg++) {
         BlobMEBase::ColourConnection firstgl;
         BlobMEBase::ColourConnection secondgl;
-        firstgl.addColour(2*nQuarkPair()+1+2*gg-1);
-        firstgl.addAntiColour(2*nQuarkPair()+2+2*gg-1);
-        secondgl.addColour(2*nQuarkPair()+2+2*gg-1);
-        secondgl.addAntiColour(2*nQuarkPair()+1+2*gg-1);
+        firstgl.addColour(2*GetnQuarkPair()+1+2*gg-1);
+        firstgl.addAntiColour(2*GetnQuarkPair()+2+2*gg-1);
+        secondgl.addColour(2*GetnQuarkPair()+2+2*gg-1);
+        secondgl.addAntiColour(2*GetnQuarkPair()+1+2*gg-1);
         res.push_back(firstgl);
         res.push_back(secondgl);      
       }  
@@ -328,19 +328,19 @@ list<BlobMEBase::ColourConnection> MEInstanton::colourConnections() const {
       BlobMEBase::ColourConnection quark_lastpair1;
       BlobMEBase::ColourConnection quark_lastpair2;
     
-      quark_lastpair1.addColour(2*(nQuarkPair()-1)+2);
-      quark_lastpair1.addAntiColour(2*(nQuarkPair()-1)+2+2);
+      quark_lastpair1.addColour(2*(GetnQuarkPair()-1)+2);
+      quark_lastpair1.addAntiColour(2*(GetnQuarkPair()-1)+2+2);
       res.push_back(quark_lastpair1);
-      quark_lastpair2.addAntiColour(2*(nQuarkPair()-1)+3);
-      quark_lastpair2.addColour(2*(nQuarkPair()-1)+2+2);
+      quark_lastpair2.addAntiColour(2*(GetnQuarkPair()-1)+3);
+      quark_lastpair2.addColour(2*(GetnQuarkPair()-1)+2+2);
       res.push_back(quark_lastpair2);
       for(unsigned int gg = 1; gg <= (ngluon-1)/2; gg++) {
         BlobMEBase::ColourConnection firstg;
         BlobMEBase::ColourConnection secondg;
-        firstg.addColour(nQuarkPair()*2+2+2*gg-1);
-        firstg.addAntiColour(nQuarkPair()*2+3+2*gg-1);
-        secondg.addColour(nQuarkPair()*2+3+2*gg-1);
-        secondg.addAntiColour(nQuarkPair()*2+2+2*gg-1);
+        firstg.addColour(GetnQuarkPair()*2+2+2*gg-1);
+        firstg.addAntiColour(GetnQuarkPair()*2+3+2*gg-1);
+        secondg.addColour(GetnQuarkPair()*2+3+2*gg-1);
+        secondg.addAntiColour(GetnQuarkPair()*2+2+2*gg-1);
         res.push_back(firstg);
         res.push_back(secondg);      
       }
@@ -350,14 +350,14 @@ list<BlobMEBase::ColourConnection> MEInstanton::colourConnections() const {
     vector<int> colours; vector<int> anticolours; vector<int> colourmap;
     // cout << "number of particles = " << meMomenta().size() << " number of gluons = " << ngluon << endl;
     //loop over the qqbar
-    for(unsigned int cc = 0; cc < nQuarkPair(); cc++) {
+    for(unsigned int cc = 0; cc < GetnQuarkPair(); cc++) {
       colours.push_back(2*cc+2);
       anticolours.push_back(2*cc+3);
     }
     //loop over the gluons
     for(int gg = 0; gg < ngluon; gg++) {
-      colours.push_back(2+nQuarkPair()*2+gg);
-      anticolours.push_back(2+nQuarkPair()*2+gg);
+      colours.push_back(2+GetnQuarkPair()*2+gg);
+      anticolours.push_back(2+GetnQuarkPair()*2+gg);
     }
     //pick a random element of the anticolour array that has not already been used. 
     int col = UseRandom::rnd(0, int(colours.size()));
@@ -415,14 +415,14 @@ list<BlobMEBase::ColourConnection> MEInstanton::colourConnections() const {
     //loop over the qqbar
     colours.push_back(0);
     anticolours.push_back(1);
-    for(unsigned int cc = 0; cc < nQuarkPair(); cc++) {
+    for(unsigned int cc = 0; cc < GetnQuarkPair(); cc++) {
       colours.push_back(2*cc+2);
       anticolours.push_back(2*cc+3);
     }
     //loop over the gluons
     for(int gg = 0; gg < ngluon; gg++) {
-      colours.push_back(2+nQuarkPair()*2+gg);
-      anticolours.push_back(2+nQuarkPair()*2+gg);
+      colours.push_back(2+GetnQuarkPair()*2+gg);
+      anticolours.push_back(2+GetnQuarkPair()*2+gg);
     }
     //pick a random element of the anticolour array that has not already been used. 
     int col = UseRandom::rnd(0, int(colours.size()));

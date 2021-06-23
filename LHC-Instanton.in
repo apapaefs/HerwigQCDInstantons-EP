@@ -13,10 +13,10 @@ read snippets/PPCollider.in
 
 cd /Herwig/EventHandlers 
 #set EventHandler:CascadeHandler        NULL
-set EventHandler:HadronizationHandler  NULL 
-set EventHandler:DecayHandler          NULL 
+#set EventHandler:HadronizationHandler  NULL 
+#set EventHandler:DecayHandler          NULL 
 # The handler for multiple parton interactions 
-set /Herwig/Shower/ShowerHandler:MPIHandler       NULL
+#set /Herwig/Shower/ShowerHandler:MPIHandler       NULL
 set /Herwig/Shower/ShowerHandler:MaxTry 100
 
 cd /Herwig/Generators
@@ -112,7 +112,7 @@ set MEInstanton:MEModeling KKS
 set MEInstanton:FactorizationScale InvRho # InvRho or sHat
 create ThePEG::Cuts /Herwig/Cuts/ResetCuts
 set /Herwig/EventHandlers/EventHandler:Cuts /Herwig/Cuts/ResetCuts
-set /Herwig/Cuts/ResetCuts:MHatMin 500*GeV # 10.7*GeV
+set /Herwig/Cuts/ResetCuts:MHatMin 200*GeV # 10.7*GeV
 set /Herwig/Cuts/ResetCuts:MHatMax 2895.5*GeV
 
 # Choose the colour connections
