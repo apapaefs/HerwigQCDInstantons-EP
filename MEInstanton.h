@@ -95,10 +95,16 @@ public:
   virtual size_t nOutgoing() const;
 
    /**
-   * Return the number of quark pairs
+   * Return the FIXED number of quark pairs
    */
 
   size_t nQuarkPair() const { return theNQuarkPair; }
+
+   /**
+   * Return the CURRENT number of quark pairs
+   */
+
+  size_t GetnQuarkPair() const;
   
   /**
    * set the maximum number of gluons
@@ -117,7 +123,7 @@ public:
    */
   virtual Energy2 FactorizationScale() const;
 
-
+ 
 public:
 
   /** @name Functions used by the persistent I/O system. */
@@ -220,6 +226,11 @@ private:
    * The choice of factorization scale (KKS modeling only)
    */
   unsigned int facscale_option;
+
+  /**
+   * How to treat the quark pairs
+   */
+  unsigned int quarkpair_option;
 
   /**
    * Setup the interpolators

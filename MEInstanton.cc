@@ -18,7 +18,7 @@
 
 using namespace Herwig;
 
-MEInstanton::MEInstanton() : theNQuarkPair(4), theColourConnections(0), MultiplicityParametrisation(0), MEModeling(0), GaussianParamA(5), GaussianParamB(200.), PoissonMean(3), facscale_option(0) {}
+MEInstanton::MEInstanton() : theNQuarkPair(4), theColourConnections(0), MultiplicityParametrisation(0), MEModeling(0), GaussianParamA(5), GaussianParamB(200.), PoissonMean(3), facscale_option(0), quarkpair_option(0) {}
 
 MEInstanton::~MEInstanton() {}
 
@@ -82,11 +82,11 @@ double MEInstanton::me2() const {
   double mesq = 1.;
 
   // get the number of gluons
-  int ngluon = (meMomenta().size()-2-nQuarkPair()*2);
+  int ngluon = (meMomenta().size()-2-GetnQuarkPair()*2);
   //cout << "number of additional gluons = " << ngluon << endl;
 
   // get the total number of outgoing particles
-  int noutgoing = ngluon + nQuarkPair()*2;
+  int noutgoing = ngluon + GetnQuarkPair()*2;
 
   double interpolated_meangluons;
   double interpolated_sigmahat;
@@ -173,6 +173,8 @@ double MEInstanton::me2() const {
 
     //from Sherpa (???)
     mesq *= 2.*sHat()/GeV/GeV;
+
+    if(quarkpair_option == 1) mesq *= 0.5; //divide by two if there's 4+5 flavours "active"
     
     //cout << sqrt_hats << "\t" << mesq << endl;
     //cout << "sqrt_hats, interpolated_meangluons, interpolated_sigmahat, mesq, noutgoing = " << sqrt_hats << "\t" << interpolated_meangluons << "\t" << interpolated_sigmahat << "\t" << mesq << "\t" << noutgoing << endl;
@@ -216,25 +218,60 @@ multimap<tcPDPair,tcPDVector> MEInstanton::processes() const {
   //make the incoming partons
   tcPDPair incoming = make_pair(g, g);
 
-  //the vectors that hold the outgoing partons
-  tcPDVector outgoing;
 
-  //push all the quarks and anti-quarks (one of each for the instanton processes). 
-  for(int i = 0; i < nQuarkPair(); ++i) {
-    outgoing.push_back(q[i]);
-    outgoing.push_back(qb[i]);
-  }
 
-  // make the process using the incoming and outgoing particles so far (i.e. no additional gluons)
-  processmap.insert(make_pair(incoming,outgoing));
-
-  //insert (1 to ngluon_max) gluons into the process
-  for(unsigned int jj=0; jj < ngluon_max; jj++) { 
-    outgoing.push_back(g);
+  //fixed number of quark pairs:
+  if(quarkpair_option == 0) {
+    //the vectors that hold the outgoing partons
+    tcPDVector outgoing;
+    //push all the quarks and anti-quarks (one of each for the instanton processes). 
+    for(int i = 0; i < nQuarkPair(); ++i) {
+      outgoing.push_back(q[i]);
+      outgoing.push_back(qb[i]);
+    }
+    // make the process using the incoming and outgoing particles so far (i.e. no additional gluons)
     processmap.insert(make_pair(incoming,outgoing));
+    
+    //insert (1 to ngluon_max) gluons into the process
+    for(unsigned int jj=0; jj < ngluon_max; jj++) { 
+      outgoing.push_back(g);
+      processmap.insert(make_pair(incoming,outgoing));
+    }
+  } else if(quarkpair_option == 1) { //variable number of quark pairs
+    //push all the quarks and anti-quarks (one of each for the instanton processes).
+    for(int maxq = 4; maxq < 6; maxq++) {
+      tcPDVector outgoing;	  
+      for(int i = 0; i < maxq; ++i) {
+	outgoing.push_back(q[i]);
+	outgoing.push_back(qb[i]);
+      }
+      // make the process using the incoming and outgoing particles so far (i.e. no additional gluons)
+      processmap.insert(make_pair(incoming,outgoing));
+      
+      //insert (1 to ngluon_max) gluons into the process
+      for(unsigned int jj=0; jj < ngluon_max; jj++) { 
+	outgoing.push_back(g);
+	processmap.insert(make_pair(incoming,outgoing));
+      }
+    }
   }
 
   return processmap;
+}
+
+size_t MEInstanton::GetnQuarkPair() const {
+  //cout << "theNQuarkPair = " << theNQuarkPair << endl;
+  if(quarkpair_option==0) { return theNQuarkPair; }
+  else if(quarkpair_option==1) {
+    //count the number of quark pairs
+    size_t counted_quarks(0);
+    for(int pp = 0; pp < mePartonData().size(); pp++) {
+      if(fabs(mePartonData()[pp]->id()) < 7 && fabs(mePartonData()[pp]->id()) > 0) counted_quarks++; 
+    }
+    return counted_quarks/2;
+
+  }
+  return theNQuarkPair;
 }
 
 list<BlobMEBase::ColourConnection> MEInstanton::colourConnections() const {
@@ -472,12 +509,12 @@ size_t MEInstanton::nOutgoing() const {
 
 void MEInstanton::persistentOutput(PersistentOStream & os) const {
   // *** ATTENTION *** os << ; // Add all member variable which should be written persistently here.
-  os << theNQuarkPair << ngluon_max << MultiplicityParametrisation << MEModeling << GaussianParamA << GaussianParamB << PoissonMean << theColourConnections << interpol_invrho << interpol_alphasrho << interpol_meangluons << interpol_sigmahat << facscale_option;
+  os << theNQuarkPair << ngluon_max << MultiplicityParametrisation << MEModeling << GaussianParamA << GaussianParamB << PoissonMean << theColourConnections << interpol_invrho << interpol_alphasrho << interpol_meangluons << interpol_sigmahat << facscale_option << quarkpair_option;
 }
 
 void MEInstanton::persistentInput(PersistentIStream & is, int) {
   // *** ATTENTION *** is >> ; // Add all member variable which should be read persistently here.
-  is >> theNQuarkPair >> ngluon_max >> MultiplicityParametrisation >> MEModeling >> GaussianParamA >> GaussianParamB >> PoissonMean >> theColourConnections >> interpol_invrho >> interpol_alphasrho >> interpol_meangluons >> interpol_sigmahat >> facscale_option;
+  is >> theNQuarkPair >> ngluon_max >> MultiplicityParametrisation >> MEModeling >> GaussianParamA >> GaussianParamB >> PoissonMean >> theColourConnections >> interpol_invrho >> interpol_alphasrho >> interpol_meangluons >> interpol_sigmahat >> facscale_option >> quarkpair_option;
 }
     
 
@@ -535,6 +572,21 @@ void MEInstanton::Init() {
     (interfaceFactorizationScale,
      "sHat",
      "Use sHat() as the factorization scale",
+     1);
+
+  static Switch<MEInstanton,unsigned int> interfaceQuarkPairs
+    ("QuarkPairs",
+     "Whether to fix or vary the quark pairs",
+     &MEInstanton::quarkpair_option, 0, false, false);
+  static SwitchOption interfaceNQuarkPairsFixed
+    (interfaceQuarkPairs,
+     "Fixed",
+     "Fix the quark pairs to the NQuarkPair number",
+     0);
+  static SwitchOption interfaceNQuarkPairsVariable
+    (interfaceQuarkPairs,
+     "Variable",
+     "Vary the quark pairs (4 or 5)",
      1);
  
     static Switch<MEInstanton,unsigned int> interfaceMultiplicityParametrisation
