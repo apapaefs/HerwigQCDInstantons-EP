@@ -12,12 +12,12 @@ read snippets/PPCollider.in
 ##################################################
 
 cd /Herwig/EventHandlers 
-#set EventHandler:CascadeHandler        NULL 
+#set EventHandler:CascadeHandler        NULL
 set EventHandler:HadronizationHandler  NULL 
 set EventHandler:DecayHandler          NULL 
 # The handler for multiple parton interactions 
 set /Herwig/Shower/ShowerHandler:MPIHandler       NULL
-
+set /Herwig/Shower/ShowerHandler:MaxTry 100
 
 cd /Herwig/Generators
 set EventGenerator:NumberOfEvents 10000000
@@ -30,7 +30,7 @@ set EventGenerator:MaxErrors 10000
 # the default sampler (flat)
 #############################
 set /Herwig/Samplers/FlatBinSampler:NIterations 2
-set /Herwig/Samplers/FlatBinSampler:InitialPoints 100000
+set /Herwig/Samplers/FlatBinSampler:InitialPoints 10000
 set /Herwig/Samplers/Sampler:BinSampler /Herwig/Samplers/FlatBinSampler
 set /Herwig/Samplers/Sampler:Verbose Yes
 set /Herwig/Samplers/Sampler:AlmostUnweighted Yes
@@ -49,7 +49,6 @@ set EventGenerator:EventHandler:Sampler /Herwig/Samplers/Sampler
 
 cd /Herwig/Cuts
 set JetKtCut:MinKT 0.0*GeV
-#set JetKtCut:MaxKT 50.0*GeV
 
 cd /Herwig/Analysis
 set Basics:CheckQuark false # removes warning that there are quarks in the final state in case hadronization is turned off
@@ -70,15 +69,33 @@ insert SubProcess:MatrixElements[0] MEInstanton
 set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/InvertiblePhasespace
 #set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/MamboPS
 
+# You may wish to use the same PDF as the events were generated with
+create ThePEG::LHAPDF /Herwig/Partons/LHAPDF ThePEGLHAPDF.so
+set /Herwig/Partons/LHAPDF:PDFName NNPDF31_nnlo_as_0118
+set /Herwig/Partons/LHAPDF:RangeException Freeze # Freeze the PDF outside the pre-defined ranges
+set /Herwig/Partons/RemnantDecayer:AllowTop Yes
+set /Herwig/Partons/LHAPDF:RemnantHandler /Herwig/Partons/HadronRemnants
+set /Herwig/Particles/p+:PDF /Herwig/Partons/LHAPDF
+set /Herwig/Particles/pbar-:PDF /Herwig/Partons/LHAPDF
+set /Herwig/Partons/PPExtractor:FirstPDF  /Herwig/Partons/LHAPDF
+set /Herwig/Partons/PPExtractor:SecondPDF /Herwig/Partons/LHAPDF
+
+# We would recommend the shower uses the default PDFs with which it was tuned.
+# However it can be argued that the same set as for the sample should be used for
+# matched samples, i.e. MC@NLO (and less so POWHEG)
+set /Herwig/Shower/ShowerHandler:PDFA /Herwig/Partons/LHAPDF
+set /Herwig/Shower/ShowerHandler:PDFB /Herwig/Partons/LHAPDF
+
+
 ################
 #PARAMETERS
 ################
 
 # the number of quark pairs to consider
-set MEInstanton:NQuarkPair 3
+set MEInstanton:NQuarkPair 4
 
 # the maximum number of additional gluons on top of the quark pairs
-set MEInstanton:NAdditional 1
+set MEInstanton:NAdditional 20
 
 
 # MEModeling = Flat (default) parameters:
@@ -91,8 +108,11 @@ set MEInstanton:GaussianParamB 200.
 
 # MEModeling = KKS (Khoze, Krauss, Schott, 1911.09726)
 set MEInstanton:MEModeling KKS
-set /Herwig/Cuts/Cuts:MHatMin 10.7*GeV
-set /Herwig/Cuts/Cuts:MHatMax 2895.5*GeV
+set MEInstanton:FactorizationScale InvRho # InvRho or sHat
+create ThePEG::Cuts /Herwig/Cuts/ResetCuts
+set /Herwig/EventHandlers/EventHandler:Cuts /Herwig/Cuts/ResetCuts
+set /Herwig/Cuts/ResetCuts:MHatMin 20*GeV # 10.7*GeV
+set /Herwig/Cuts/ResetCuts:MHatMax 2895.5*GeV
 
 # Choose the colour connections
 set MEInstanton:ColourConnections Random2

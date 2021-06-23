@@ -4,7 +4,7 @@
 //
 // This is the declaration of the MEInstanton class.
 //
-
+#include "Herwig/MatrixElement/HwMEBase.h"
 #include "Herwig/MatrixElement/BlobME.h"
 #include "Herwig/Utilities/Interpolator.h"
 
@@ -104,8 +104,19 @@ public:
    * set the maximum number of gluons
    */
 
-  void ngluonmax(size_t ng) const { ngluon_max = ng; } 
-  
+  void ngluonmax(size_t ng) const { ngluon_max = ng; }
+
+
+  /**
+   * Return the scale associated with the last set phase space point.
+   */
+  virtual Energy2 scale() const;
+
+  /**
+   * Return the factorization scale associated with the last set phase space point.
+   */
+  virtual Energy2 FactorizationScale() const;
+
 
 public:
 
@@ -206,6 +217,11 @@ private:
   unsigned int theColourConnections;
 
   /**
+   * The choice of factorization scale (KKS modeling only)
+   */
+  unsigned int facscale_option;
+
+  /**
    * Setup the interpolators
    */
   void setup_interpolator();
@@ -217,6 +233,18 @@ private:
   Interpolator<double, double>::Ptr interpol_alphasrho;
   Interpolator<double, double>::Ptr interpol_meangluons;
   Interpolator<double, double>::Ptr interpol_sigmahat;
+
+  /**
+   *  The hadrons
+   */
+  mutable tcBeamPtr hadron1;
+  mutable tcBeamPtr hadron2;
+
+  /**
+   *  momentum fraction
+   */
+  mutable double x1;
+  mutable double x2;
 
 };
 
