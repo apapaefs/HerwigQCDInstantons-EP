@@ -10,15 +10,18 @@ THEPEGINCLUDE  =
 HERWIGINCLUDE  =
 GSLINCLUDE     = 
 FASTJETINCLUDE = 
+BOOSTINCLUDE =
 HEPMCINCLUDE =
-PYTHONINCLUDE = $(shell python-config --include)
+PYTHONINCLUDE =
+PYTHONPATH =
+HERWIGINSTALL =
+FCLIBS =
 # Messy hack, not guaranteed to work:
 FASTJETPATH = $(shell fastjet-config --prefix)
-PYTHONPATH = $(shell python-config --prefix)
 LDFLAGS= -L$(FASTJETPATH)/lib -lfastjet $(shell rivet-config --ldflags --libs)
 # -L$(PYTHONPATH)/lib $(shell python-config --ldflags --libs)
 SHARED_FLAG = 
-INCLUDE = $(THEPEGINCLUDE) $(HERWIGINCLUDE) $(GSLINCLUDE) $(FASTJETINCLUDE) $(HEPMCINCLUDE) $(PYTHONINCLUDE)
+INCLUDE = $(THEPEGINCLUDE) $(HERWIGINCLUDE) $(GSLINCLUDE) $(FASTJETINCLUDE) $(BOOSTINCLUDE) $(HEPMCINCLUDE) $(PYTHONINCLUDE)
 # C++ flags
 CXX =
 CXXFLAGS =
@@ -40,4 +43,3 @@ clean:
 
 install:
 	cp *.so $(HERWIGINSTALL)/lib/Herwig
-

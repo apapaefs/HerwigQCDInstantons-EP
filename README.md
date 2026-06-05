@@ -37,3 +37,37 @@ Herwig read /tmp/mambo-phasespace-smoke.in
 ```
 
 The final command should exit without an error.
+
+## Building `MEInstanton` as a Herwig contrib plugin
+
+After `MamboPhasespace` has been added to Herwig and Herwig has been rebuilt, copy this repository into Herwig's `Contrib` directory:
+
+```sh
+cp -R /path/to/HerwigQCDInstantons "$HERWIG_SRC/Contrib/HerwigQCDInstantons"
+cd "$HERWIG_SRC/Contrib"
+bash make_makefiles.sh
+```
+
+Build and install the plugin:
+
+```sh
+cd "$HERWIG_SRC/Contrib/HerwigQCDInstantons"
+make
+make install
+```
+
+This installs `Instantons.so` into the Herwig plugin directory.
+
+Check that Herwig can load both pieces:
+
+```sh
+cat >/tmp/instanton-plugin-smoke.in <<'EOF'
+cd /Herwig/MatrixElements/Matchbox/Phasespace
+create Herwig::MamboPhasespace MamboPS
+cd /Herwig/MatrixElements
+create Herwig::MEInstanton MEInstanton Instantons.so
+set MEInstanton:Phasespace /Herwig/MatrixElements/Matchbox/Phasespace/MamboPS
+EOF
+
+Herwig read /tmp/instanton-plugin-smoke.in
+```
